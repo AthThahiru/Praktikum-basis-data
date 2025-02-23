@@ -1,0 +1,69 @@
+Microsoft Windows [Version 10.0.26100.3194]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\M S I>CD C:\xampp\mysql\bin
+
+C:\xampp\mysql\bin>mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 8
+Server version: 10.4.32-MariaDB mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> create database if not exist pustaka
+    -> ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'exist pustaka' at line 1
+MariaDB [(none)]> create database if not exists pustaka;
+Query OK, 1 row affected (0.008 sec)
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| akademik           |
+| information_schema |
+| mysql              |
+| performance_schema |
+| perpustakaan       |
+| phpmyadmin         |
+| pustaka            |
+| siperpus           |
+| test               |
++--------------------+
+9 rows in set (0.018 sec)
+
+MariaDB [(none)]> use pustaka;
+Database changed
+MariaDB [pustaka]> create table mahasiswa (
+    -> NPM char(5) not null primary key,
+    -> nama varchar(20) not null,
+    -> tempat_lahir varchar(20) not null,
+    -> tanggal_lahir date not null,
+    -> no_hp varchar(25)
+    -> );
+Query OK, 0 rows affected (0.362 sec)
+
+MariaDB [pustaka]> show tables;
++-------------------+
+| Tables_in_pustaka |
++-------------------+
+| mahasiswa         |
++-------------------+
+1 row in set (0.004 sec)
+
+MariaDB [pustaka]> desc mahasiswa;
++---------------+-------------+------+-----+---------+-------+
+| Field         | Type        | Null | Key | Default | Extra |
++---------------+-------------+------+-----+---------+-------+
+| NPM           | char(5)     | NO   | PRI | NULL    |       |
+| nama          | varchar(20) | NO   |     | NULL    |       |
+| tempat_lahir  | varchar(20) | NO   |     | NULL    |       |
+| tanggal_lahir | date        | NO   |     | NULL    |       |
+| no_hp         | varchar(25) | YES  |     | NULL    |       |
++---------------+-------------+------+-----+---------+-------+
+5 rows in set (0.013 sec)
+
+MariaDB [pustaka]>
