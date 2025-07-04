@@ -229,4 +229,116 @@ MariaDB [universitas]> insert into pembelian values
     -> (2, 'A10', 10);
 Query OK, 1 row affected (0.007 sec)
 
-MariaDB [universitas]>
+MariaDB [universitas]> ALTER TABLE pembelian DROP FOREIGN KEY pembelian_ibfk_1;
+Query OK, 0 rows affected (0.030 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+MariaDB [universitas]> create table buku (
+    -> id_buku INT AUTO_INCREMENT primary key,
+    -> judul VARCHAR(100),
+    -> penulis VARCHAR(100),
+    -> harga DECIMAL(10,2),
+    -> stok INT );
+Query OK, 0 rows affected (0.034 sec)
+
+MariaDB [universitas]> create table pelanggan (
+    -> id_pelanggan INT AUTO_INCREMENT primary key,
+    -> nama VARCHAR(100),
+    -> total_belanja DECIMAL(10,2) DEFAULT 0,
+    -> status_member ENUM('REGULER', 'GOLD', 'PLATINUM') DEFAULT 'REGULER' );
+Query OK, 0 rows affected (0.011 sec)
+
+MariaDB [universitas]> create table transaksi (
+    -> id_transaksi INT AUTO_INCREMENT primary key,
+    -> id_pelanggan INT,
+    -> id_buku INT,
+    -> jumlah INT,
+    -> total_harga DECIMAL(10,2),
+    -> tanggal_transaksi DATE,
+    -> foreign key (id_pelanggan) references pelanggan(id_pelanggan),
+    -> foreign key (id_buku) references buku(id_buku) );
+Query OK, 0 rows affected (0.027 sec)
+
+MariaDB [universitas]> DELIMITER //
+MariaDB [universitas]> CREATE FUNCTION hitung_diskon(total_belanja DECIMAL(10,2))
+    -> RETURNS DECIMAL(5,2)
+    -> DETERMINISTIC
+    -> BEGIN
+    ->     DECLARE diskon DECIMAL(5,2);
+    ->     IF total_belanja < 1000000 THEN
+    ->         SET diskon = 0.00;
+    ->     ELSEIF total_belanja < 5000000 THEN
+    ->         SET diskon = 0.05;
+    ->     ELSE
+    ->         SET diskon = 0.10;
+    ->     END IF;
+    ->     RETURN diskon;
+    -> END //
+Query OK, 0 rows affected (0.025 sec)
+
+MariaDB [universitas]> CREATE PROCEDURE tambah_transaksi (
+    ->     IN p_id_pelanggan INT,
+    ->     IN p_id_buku INT,
+    ->     IN p_jumlah INT
+    -> )
+    -> BEGIN
+    ->     DECLARE v_harga DECIMAL(10,2);
+    ->     DECLARE v_total_harga DECIMAL(10,2);
+    ->     DECLARE v_stok INT;
+    ->
+    ->     -- Ambil harga dan stok dari buku
+    ->     SELECT harga, stok INTO v_harga, v_stok
+    ->     FROM buku
+    ->     WHERE id_buku = p_id_buku;
+    ->
+    ->     -- Validasi stok
+    ->     IF v_stok < p_jumlah THEN
+    ->         SIGNAL SQLSTATE '45000'
+    ->         SET MESSAGE_TEXT = 'Stok tidak mencukupi';
+    ->     ELSE
+    ->         -- Hitung total harga
+    ->         SET v_total_harga = v_harga * p_jumlah;
+    ->
+    ->         -- Update stok buku
+    ->         UPDATE buku
+    ->         SET stok = stok - p_jumlah
+    ->         WHERE id_buku = p_id_buku;
+    ->
+    ->         -- Insert ke tabel transaksi
+    ->         INSERT INTO transaksi(id_pelanggan, id_buku, jumlah, total_harga)
+    ->         VALUES(p_id_pelanggan, p_id_buku, p_jumlah, v_total_harga);
+    ->
+    ->         -- Update total belanja pelanggan
+    ->         UPDATE pelanggan
+    ->         SET total_belanja = total_belanja + v_total_harga
+    ->         WHERE id_pelanggan = p_id_pelanggan;
+    ->
+    ->         -- Tampilkan pesan sukses
+    ->         SELECT 'Transaksi berhasil' AS pesan;
+    ->     END IF;
+    -> END //
+Query OK, 0 rows affected (0.026 sec)
+
+MariaDB [universitas]> DELIMITER $$
+MariaDB [universitas]> CREATE TRIGGER trg_update_status_member
+    -> AFTER UPDATE ON pelanggan
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     DECLARE new_status ENUM('REGULER', 'GOLD', 'PLATINUM');
+    ->     IF NEW.total_belanja >= 5000000 THEN
+    ->         SET new_status = 'PLATINUM';
+    ->     ELSEIF NEW.total_belanja >= 1000000 THEN
+    ->         SET new_status = 'GOLD';
+    ->     ELSE
+    ->         SET new_status = 'REGULER';
+    ->     END IF;
+    ->
+    ->     IF NEW.status_member <> new_status THEN
+    ->         UPDATE pelanggan
+    ->         SET status_member = new_status
+    ->         WHERE id_pelanggan = NEW.id_pelanggan;
+    ->     END IF;
+    -> END $$
+Query OK, 0 rows affected (0.035 sec)
+
+
