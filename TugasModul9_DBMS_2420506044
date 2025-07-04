@@ -1,1 +1,232 @@
+Microsoft Windows [Version 10.0.26100.4351]
+(c) Microsoft Corporation. All rights reserved.
 
+C:\Users\M S I>cd :c/xampp/mysql/bin
+The filename, directory name, or volume label syntax is incorrect.
+
+C:\Users\M S I>cd c:/xampp/mysql/bin
+
+c:\xampp\mysql\bin>mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 8
+Server version: 10.4.32-MariaDB mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> create database dbms9;
+Query OK, 1 row affected (0.003 sec)
+
+MariaDB [(none)]> use dbms9;
+Database changed
+MariaDB [dbms9]> exit
+Bye
+
+c:\xampp\mysql\bin>mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 9
+Server version: 10.4.32-MariaDB mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| akademik           |
+| coba               |
+| dbms06             |
+| dbms08             |
+| dbms11_2420506042  |
+| dbms11_2420506044  |
+| dbms8              |
+| dbms9              |
+| information_schema |
+| mysql              |
+| performance_schema |
+| perpustakaan       |
+| perpusteori        |
+| phpmyadmin         |
+| pinjam             |
+| test               |
+| universitas        |
++--------------------+
+17 rows in set (0.006 sec)
+
+MariaDB [(none)]> drop universitas;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'universitas' at line 1
+MariaDB [(none)]> drop database universitas;
+Query OK, 0 rows affected (0.005 sec)
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| akademik           |
+| coba               |
+| dbms06             |
+| dbms08             |
+| dbms11_2420506042  |
+| dbms11_2420506044  |
+| dbms8              |
+| dbms9              |
+| information_schema |
+| mysql              |
+| performance_schema |
+| perpustakaan       |
+| perpusteori        |
+| phpmyadmin         |
+| pinjam             |
+| test               |
++--------------------+
+16 rows in set (0.001 sec)
+
+MariaDB [(none)]> create database universitas;
+Query OK, 1 row affected (0.003 sec)
+
+MariaDB [(none)]> use universitas;
+Database changed
+MariaDB [universitas]> create table mahasiswa (
+    -> NPM varchar(5) primary key,
+    -> Nama varchar(100) not null,
+    -> Alamat text(100),
+    -> Id_Kelurahan int,
+    -> Jenis_Kelamin enum ('L', 'P'),
+    -> No_HP varchar(15),
+    -> Kode_Prodi int null
+    -> );
+Query OK, 0 rows affected (0.015 sec)
+
+MariaDB [universitas]> insert into mahasiswa values
+    -> ('12345', 'Muhammad Fikrie Ath Thahiru', 'Magelang', '1', 'L', '081227541945', '1'),
+    -> ('12346', 'Budi Sugandhi', 'Bekasi', '109', 'L', '085643433321', '2'),
+    -> ('12347', 'Toha Sitohang', 'Medan', '103', 'L', '08989787876', '2'),
+    -> ('12348', 'Mega', 'Condong Catur', '107', 'P', '0839303058', '1'),
+    -> ('12349', 'Prabowo Subiyanto', 'Jakarta', '234', 'L', '09898877663', 'null'),
+    -> ('12780', 'Anis Baswedan', 'Jakarta', '234', 'L', '09898877663', 'null'),
+    -> ('12786', 'Ganjar Pranowo', 'Jawa Tengah', '123', 'L', '087656356622', 'null')
+    -> ;
+Query OK, 7 rows affected, 3 warnings (0.013 sec)
+Records: 7  Duplicates: 0  Warnings: 3
+
+MariaDB [universitas]> delimiter //
+MariaDB [universitas]> create procedure view_mhs_simple()
+    -> begin
+    -> select NPM, Nama, No_HP
+    -> from mahasiswa;
+    -> end //
+Query OK, 0 rows affected (0.007 sec)
+
+MariaDB [universitas]> call view_mhs_simple();
+    -> p;
+    -> //
++-------+-----------------------------+--------------+
+| NPM   | Nama                        | No_HP        |
++-------+-----------------------------+--------------+
+| 12345 | Muhammad Fikrie Ath Thahiru | 081227541945 |
+| 12346 | Budi Sugandhi               | 085643433321 |
+| 12347 | Toha Sitohang               | 08989787876  |
+| 12348 | Mega                        | 0839303058   |
+| 12349 | Prabowo Subiyanto           | 09898877663  |
+| 12780 | Anis Baswedan               | 09898877663  |
+| 12786 | Ganjar Pranowo              | 087656356622 |
++-------+-----------------------------+--------------+
+7 rows in set (0.002 sec)
+
+Query OK, 0 rows affected (0.025 sec)
+
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'p' at line 1
+MariaDB [universitas]> call view_mhs_simple();
+    -> //
++-------+-----------------------------+--------------+
+| NPM   | Nama                        | No_HP        |
++-------+-----------------------------+--------------+
+| 12345 | Muhammad Fikrie Ath Thahiru | 081227541945 |
+| 12346 | Budi Sugandhi               | 085643433321 |
+| 12347 | Toha Sitohang               | 08989787876  |
+| 12348 | Mega                        | 0839303058   |
+| 12349 | Prabowo Subiyanto           | 09898877663  |
+| 12780 | Anis Baswedan               | 09898877663  |
+| 12786 | Ganjar Pranowo              | 087656356622 |
++-------+-----------------------------+--------------+
+7 rows in set (0.001 sec)
+
+Query OK, 0 rows affected (0.031 sec)
+
+MariaDB [universitas]> delimiter $$
+MariaDB [universitas]> create function tambah (angka1 int, angka2 int) returns int
+    -> begin
+    -> return angka1 + angka2;
+    -> end; $$
+Query OK, 0 rows affected (0.040 sec)
+
+MariaDB [universitas]> select tambah(4,8);
+    -> $$
++-------------+
+| tambah(4,8) |
++-------------+
+|          12 |
++-------------+
+1 row in set (0.001 sec)
+
+MariaDB [universitas]> create table barang (
+    -> Id_Barang char(4) primary key,
+    -> Nama_Barang varchar(20) not null,
+    -> Stok int not null
+    -> );
+    ->
+    -> Ctrl-C -- exit!
+Bye
+
+c:\xampp\mysql\bin>mysql -u root -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 10
+Server version: 10.4.32-MariaDB mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> use universitas;
+Database changed
+MariaDB [universitas]> create table barang (
+    -> Id_Barang char(4) primary key,
+    -> Nama_Barang varchar(20) not null,
+    -> Stok int not null
+    -> );
+Query OK, 0 rows affected (0.043 sec)
+
+MariaDB [universitas]> insert into barang values
+    -> ('A10', 'Mouse', 10),
+    -> ('A11', 'Keyboard', 15),
+    -> ('A12', 'DVD R-W', 10)
+    -> ;
+Query OK, 3 rows affected (0.009 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+MariaDB [universitas]> create table pembelian (
+    -> Id_Pem int primary key,
+    -> Id_Brg char(4),
+    -> Jml_Beli int not null,
+    -> Foreign key (Id_Brg) references barang (Id_Barang)
+    -> );
+Query OK, 0 rows affected (0.017 sec)
+
+MariaDB [universitas]> insert into pembelian values
+    -> (1, 'A10', 5);
+Query OK, 1 row affected (0.006 sec)
+
+MariaDB [universitas]> insert into barang values ('A13', 'Modem', 5);
+Query OK, 1 row affected (0.007 sec)
+
+MariaDB [universitas]> insert into pembelian values
+    -> (2, 'A10', 10);
+Query OK, 1 row affected (0.007 sec)
+
+MariaDB [universitas]>
