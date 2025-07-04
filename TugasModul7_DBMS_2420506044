@@ -1,0 +1,124 @@
+MariaDB [(none)]> CREATE DATABASE db_penjualan;
+Query OK, 1 row affected (0.017 sec)
+
+MariaDB [(none)]> USE db_penjualan;
+Database changed
+MariaDB [db_penjualan]> CREATE TABLE produk (
+    -> kode_produk VARCHAR(10) primary key,
+    -> nama_produk VARCHAR(50),
+    -> harga INT
+    -> );
+Query OK, 0 rows affected (0.036 sec)
+
+MariaDB [db_penjualan]> CREATE TABLE transaksi (
+    -> id_transaksi INT AUTO_INCREMENT primary key,
+    -> kode_produk VARCHAR(10),
+    -> jumlah INT,
+    -> total_harga INT,
+    -> FOREIGN KEY (kode_produk) REFERENCES produk (kode_produk)
+    -> );
+Query OK, 0 rows affected (0.025 sec)
+
+MariaDB [db_penjualan]> CREATE TABLE pelanggan (
+    -> id_pelanggan INT AUTO_INCREMENT primary key,
+    -> nama_pelanggan VARCHAR(50),
+    -> alamat VARCHAR(100)
+    -> );
+Query OK, 0 rows affected (0.023 sec)
+
+MariaDB [db_penjualan]> INSERT INTO produk VALUES ('P001', 'Laptop', 7000000), ('P002', 'Mouse', 150000);
+Query OK, 2 rows affected (0.004 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+MariaDB [db_penjualan]> INSERT INTO transaksi (kode_produk, jumlah, total_harga) VALUES ('P001', 2, 14000000), ('P002', 5, 750000);
+Query OK, 2 rows affected (0.015 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+MariaDB [db_penjualan]> INSERT INTO pelanggan (nama_pelanggan, alamat) VALUES ('Andi', 'Jl. Merdeka'), ('Budi', 'Jl. Sudirman');
+Query OK, 2 rows affected (0.016 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+MariaDB [db_penjualan]> CREATE INDEX idx_harga ON produk(harga);
+Query OK, 0 rows affected (0.021 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+MariaDB [db_penjualan]> EXPLAIN SELECT * FROM transaksi WHERE total_harga > 5000000;
++------+-------------+-----------+------+---------------+------+---------+------+------+-------------+
+| id   | select_type | table     | type | possible_keys | key  | key_len | ref  | rows | Extra       |
++------+-------------+-----------+------+---------------+------+---------+------+------+-------------+
+|    1 | SIMPLE      | transaksi | ALL  | NULL          | NULL | NULL    | NULL | 2    | Using where |
++------+-------------+-----------+------+---------------+------+---------+------+------+-------------+
+1 row in set (0.016 sec)
+
+
+
+MariaDB [db_penjualan]> SELECT * FROM produk WHERE harga > (SELECT AVG(harga) FROM produk);
++-------------+-------------+---------+
+| kode_produk | nama_produk | harga   |
++-------------+-------------+---------+
+| P001        | Laptop      | 7000000 |
++-------------+-------------+---------+
+1 row in set (0.020 sec)
+
+MariaDB [db_penjualan]> SELECT * FROM transaksi WHERE total_harga > 2000000;
++--------------+-------------+--------+-------------+--------------+
+| id_transaksi | kode_produk | jumlah | total_harga | id_pelanggan |
++--------------+-------------+--------+-------------+--------------+
+|            3 | P001        |      2 |    14000000 |         NULL |
++--------------+-------------+--------+-------------+--------------+
+1 row in set (0.001 sec)
+
+MariaDB [db_penjualan]> ALTER TABLE transaksi ADD COLUMN id_pelanggan INT;
+Query OK, 0 rows affected (0.010 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+MariaDB [db_penjualan]> UPDATE transaksi SET id_pelanggan = 1 WHERE id_transaksi = 1;
+Query OK, 0 rows affected (0.003 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+MariaDB [db_penjualan]> UPDATE transaksi SET id_pelanggan = 2 WHERE id_transaksi = 2;
+Query OK, 0 rows affected (0.001 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+MariaDB [db_penjualan]> ALTER TABLE transaksi
+    -> ADD CONSTRAINT fk_pelanggan
+    -> FOREIGN KEY (id_pelanggan) REFERENCES pelanggan (id_pelanggan);
+Query OK, 2 rows affected (0.064 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+MariaDB [db_penjualan]> SELECT p.nama_pelanggan, SUM(t.total_harga) AS total_transaksi
+    -> FROM pelanggan p
+    -> JOIN transaksi t ON p.id_pelanggan = t.id_pelanggan
+    -> GROUP BY p.nama_pelanggan;
++----------------+-----------------+
+| nama_pelanggan | total_transaksi |
++----------------+-----------------+
+| Andi           |        14000000 |
+| Budi           |          750000 |
++----------------+-----------------+
+2 rows in set (0.181 sec)
+
+MariaDB [db_penjualan]> EXPLAIN
+    -> SELECT p.nama_pelanggan, SUM(t.total_harga) AS total_transaksi
+    -> FROM pelanggan p
+    -> JOIN transaksi t ON p.id_pelanggan = t.id_pelanggan
+    -> GROUP BY p.nama_pelanggan;
++------+-------------+-------+------+---------------+------+---------+------+------+-------------------------------------------------+
+| id   | select_type | table | type | possible_keys | key  | key_len | ref  | rows | Extra                                           |
++------+-------------+-------+------+---------------+------+---------+------+------+-------------------------------------------------+
+|    1 | SIMPLE      | p     | ALL  | PRIMARY       | NULL | NULL    | NULL | 2    | Using temporary; Using filesort                 |
+|    1 | SIMPLE      | t     | ALL  | fk_pelanggan  | NULL | NULL    | NULL | 2    | Using where; Using join buffer (flat, BNL join) |
++------+-------------+-------+------+---------------+------+---------+------+------+-------------------------------------------------+
+2 rows in set (0.002 sec)
+
+MariaDB [db_penjualan]> CREATE UNIQUE INDEX idx_kode_produk ON produk(kode_produk);
+Query OK, 0 rows affected (0.036 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+MariaDB [db_penjualan]> EXPLAIN SELECT * FROM produk WHERE kode_produk= 'P001';
++------+-------------+--------+-------+-------------------------+---------+---------+-------+------+-------+
+| id   | select_type | table  | type  | possible_keys           | key     | key_len | ref   | rows | Extra |
++------+-------------+--------+-------+-------------------------+---------+---------+-------+------+-------+
+|    1 | SIMPLE      | produk | const | PRIMARY,idx_kode_produk | PRIMARY | 42      | const | 1    |       |
++------+-------------+--------+-------+-------------------------+---------+---------+-------+------+-------+
+1 row in set (0.002 sec)
